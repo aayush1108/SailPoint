@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
+<Rule created="1717886417819" id="c0a87e018ff813f6818ffa027b9b0229" language="beanshell" modified="1718029160284" name="Metadata Update test">
+  <Source>
+  // Import statements
+  import sailpoint.api.SailPointContext;
+  import sailpoint.api.SailPointFactory;
+  import sailpoint.object.Bundle;
+  import sailpoint.tools.GeneralException;
+  import sailpoint.object.Role;
+  import java.io.BufferedReader;
+  import java.io.FileReader;
+  import java.io.IOException;
+  import sailpoint.object.*;
+
+  // Variables
+  String csvFile = "E:\\roles.csv"; // Adjust path to your CSV file
+
+  // Check CSV file path
+  if (csvFile == null || csvFile.isEmpty()) {
+    System.err.println("Error: ROLE_METADATA_FILE environment variable not set.");
+    System.exit(1); // Exit if CSV file path is not set
+  }
+
+  String line = "";
+  String delimiter = ",";
+
+  //SailPointContext context = null;
+  BufferedReader br = null;
+  boolean createdContext = false;
+
+  try {
+    // Initialize SailPoint context
+    //context = SailPointFactory.createContext();
+    //createdContext = true;
+
+    // Open CSV file
+    br = new BufferedReader(new FileReader(csvFile));
+
+    // Skip header line
+    br.readLine();
+
+    // Read CSV file line by line
+    while ((line = br.readLine()) != null) {
+      // Split the line into fields
+      String[] fields = line.split(delimiter);
+
+      // Ensure we have enough fields
+      if (fields.length &lt; 9) {
+        System.err.println("Error: Invalid CSV format.");
+        continue;
+      }
+
+      // Extract metadata from fields
+      String displayName = fields[0];
+      String elevatedAccess = fields[1];
+      String environment = fields[2];
+      String name = fields[3];
+      String owner = fields[4];
+      String type = fields[5];
+      String onboardingStatus = fields[6];
+      String approvalLevel = fields[7];
+      String description = fields[8];
+      
+      try{
+
+      // Create or update role in IdentityIQ
+      Bundle role = context.getObjectByName(Bundle.class, name);
+       //if (role == null) {
+       //  role = new Role();
+       //  role.setName(name);
+        //Set other metadata fields...
+      //} else 
+       // {
+        //role.setDisplayName(displayName);
+        role.setIiqElevatedAccess(Boolean.parseBoolean(elevatedAccess));
+        //role.setType(type);
+        role.setAttribute("Onboarding Status", onboardingStatus);
+        role.setAttribute("Environment", environment);
+        role.setAttribute("Approval Level", approvalLevel);
+        role.setDescription(description);
+        
+        //Update other metadata fields...
+//}
+      context.saveObject(role);
+      } catch(Exception e){
+      }
+      
+    }
+
+    // Commit changes
+    try {
+      context.commitTransaction();
+      // Print success message
+      System.out.println("Role metadata updated successfully.");
+    } catch (GeneralException e) {
+      //e.printStackTrace();
+      System.out.println("Error committing transaction: " + e.getMessage());
+    }
+  } catch (GeneralException e) {
+    // Handle exceptions
+    System.err.println("Error updating role metadata: " + e.getMessage());
+  } finally {
+    // Close resources
+    if (br != null) {
+      try {
+        br.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
+    if (context != null) {
+      context.close();
+    }
+  }
+  </Source>
+</Rule>
