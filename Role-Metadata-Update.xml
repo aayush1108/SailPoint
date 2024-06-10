@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE Rule PUBLIC "sailpoint.dtd" "sailpoint.dtd">
-<Rule created="1717886417819" id="c0a87e018ff813f6818ffa027b9b0229" language="beanshell" modified="1718029160284" name="Metadata Update test">
+<Rule created="1717886417819" id="c0a87e018ff813f6818ffa027b9b0229" language="beanshell" modified="1718042121346" name="Metadata Update test">
   <Source>
   // Import statements
   import sailpoint.api.SailPointContext;
@@ -56,7 +56,7 @@
       String elevatedAccess = fields[1];
       String environment = fields[2];
       String name = fields[3];
-      String owner = fields[4];
+      String identityName = fields[4];
       String type = fields[5];
       String onboardingStatus = fields[6];
       String approvalLevel = fields[7];
@@ -79,6 +79,15 @@
         role.setAttribute("Environment", environment);
         role.setAttribute("Approval Level", approvalLevel);
         role.setDescription(description);
+        
+        Identity identity= context.getObjectByName(Identity.class, identityName);
+        
+        if(identity == null) {
+          System.err.println("Error: Owner not found: " +owerName);
+         	continue;
+             }
+                       
+        role.setOwner(identity);
         
         //Update other metadata fields...
 //}
